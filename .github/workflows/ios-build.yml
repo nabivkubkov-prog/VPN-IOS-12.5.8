@@ -1,0 +1,44 @@
+
+name: iOS Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Select Xcode
+        run: |
+          xcodebuild -version
+          xcodebuild -list -project INCY.xcodeproj
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: Core/go.mod
+
+      - name: Check project files
+        run: |
+          git submodule status
+          ls -la
+          ls -la Vendor
+
+      - name: Build iOS archive
+        run: |
+          xcodebuild archive \
+            -project INCY.xcodeproj \
+            -scheme INCY \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/INCY.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO
