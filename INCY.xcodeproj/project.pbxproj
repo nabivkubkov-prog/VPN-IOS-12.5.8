@@ -1,0 +1,717 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+
+	};
+	objectVersion = 56;
+	objects = {
+		594193EFA70420E10ED02DA8 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "text.xcconfig";
+			path = "Config/Signing.xcconfig";
+			sourceTree = "<group>";
+		};
+		625A6482E0B96D26AC2E7299 = {
+			isa = PBXFileReference;
+			explicitFileType = "wrapper.application";
+			path = "INCY.app";
+			sourceTree = BUILT_PRODUCTS_DIR;
+			includeInIndex = 0;
+		};
+		FBA6C3998EAF9637D3F1D14A = {
+			isa = PBXFileReference;
+			explicitFileType = "wrapper.app-extension";
+			path = "PacketTunnel.appex";
+			sourceTree = BUILT_PRODUCTS_DIR;
+			includeInIndex = 0;
+		};
+		166B27567711F50E22029B61 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "folder.assetcatalog";
+			path = "App/Assets.xcassets";
+			sourceTree = "<group>";
+		};
+		4D04D8DB2A9651008ED818F7 = {
+			isa = PBXBuildFile;
+			fileRef = 166B27567711F50E22029B61;
+		};
+		DD6F14438C4A9C59F89572F5 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "file.storyboard";
+			path = "App/LaunchScreen.storyboard";
+			sourceTree = "<group>";
+		};
+		108BA3E2DF01D092ABEBC54E = {
+			isa = PBXBuildFile;
+			fileRef = DD6F14438C4A9C59F89572F5;
+		};
+		DA83A65366024B0A0FBF7026 = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4D04D8DB2A9651008ED818F7,
+				108BA3E2DF01D092ABEBC54E,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D44C5F226BA045C37B707F14 = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F55F1CF14BBD2C40B903CCF7 = {
+			isa = PBXBuildFile;
+			fileRef = FBA6C3998EAF9637D3F1D14A;
+			settings = {
+				ATTRIBUTES = (
+					RemoveHeadersOnCopy,
+				);
+			};
+		};
+		B153D1EB06D5694794DF6967 = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F55F1CF14BBD2C40B903CCF7,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		592D887B4D671F89D4F37C29 = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 935157643B86313F0B7F1995;
+			proxyType = 1;
+			remoteGlobalIDString = 864275CC77E6BAB67C296B27;
+			remoteInfo = PacketTunnel;
+		};
+		FCAE9B7A744B5CDF1EDAC805 = {
+			isa = PBXTargetDependency;
+			target = 864275CC77E6BAB67C296B27;
+			targetProxy = 592D887B4D671F89D4F37C29;
+		};
+		CFFD3BE27EC8C1EC74FAE013 = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = INCY;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(INCY_BUNDLE_BASE)";
+				INFOPLIST_FILE = "Config/App-Info.plist";
+				CODE_SIGN_ENTITLEMENTS = "Config/App.entitlements";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+			};
+			name = Debug;
+		};
+		06026702C38FD10B70AD71BD = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = INCY;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(INCY_BUNDLE_BASE)";
+				INFOPLIST_FILE = "Config/App-Info.plist";
+				CODE_SIGN_ENTITLEMENTS = "Config/App.entitlements";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+			};
+			name = Release;
+		};
+		2532B771085323F5D941E391 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CFFD3BE27EC8C1EC74FAE013,
+				06026702C38FD10B70AD71BD,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		181F7325A15496DCD4C7BC63 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "App/AppDelegate.swift";
+			sourceTree = "<group>";
+		};
+		421160CFA25E31F70E60C443 = {
+			isa = PBXBuildFile;
+			fileRef = 181F7325A15496DCD4C7BC63;
+		};
+		621F641B7B045E878C3E51AB = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "App/HomeController.swift";
+			sourceTree = "<group>";
+		};
+		9B57ECBEEEB5D2C4F87CE1B1 = {
+			isa = PBXBuildFile;
+			fileRef = 621F641B7B045E878C3E51AB;
+		};
+		FDF7A893F46453A349A3D237 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "App/ImportController.swift";
+			sourceTree = "<group>";
+		};
+		938033402F076095A6B6E2A6 = {
+			isa = PBXBuildFile;
+			fileRef = FDF7A893F46453A349A3D237;
+		};
+		A87BA2898B3486577F10E63A = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "App/ProfilesController.swift";
+			sourceTree = "<group>";
+		};
+		7303472F523F67DC2203ECD4 = {
+			isa = PBXBuildFile;
+			fileRef = A87BA2898B3486577F10E63A;
+		};
+		7C3D903FE24AEB77F6D30742 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "App/ProfileStore.swift";
+			sourceTree = "<group>";
+		};
+		4C8C06475BC5CBE51CE2B6B5 = {
+			isa = PBXBuildFile;
+			fileRef = 7C3D903FE24AEB77F6D30742;
+		};
+		8B433B6C5F49CE69350E0C16 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "App/QRController.swift";
+			sourceTree = "<group>";
+		};
+		860EBBAC0C431755AD566BAA = {
+			isa = PBXBuildFile;
+			fileRef = 8B433B6C5F49CE69350E0C16;
+		};
+		A7C9B7C04A6BECA9D5EA6CBD = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "App/SettingsController.swift";
+			sourceTree = "<group>";
+		};
+		375C7A480017D3A843188F28 = {
+			isa = PBXBuildFile;
+			fileRef = A7C9B7C04A6BECA9D5EA6CBD;
+		};
+		57E7D81138AFBBBD6813F218 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "App/Theme.swift";
+			sourceTree = "<group>";
+		};
+		97DF342C351C04D9393F85BF = {
+			isa = PBXBuildFile;
+			fileRef = 57E7D81138AFBBBD6813F218;
+		};
+		3ED3807B35D99A156797D5CF = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "App/VPNController.swift";
+			sourceTree = "<group>";
+		};
+		A7DCC91F6A581B6FA3649188 = {
+			isa = PBXBuildFile;
+			fileRef = 3ED3807B35D99A156797D5CF;
+		};
+		DEB3CAE066802EA2BED64430 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "Shared/Profile.swift";
+			sourceTree = "<group>";
+		};
+		371CEE2171A78217BA0A4479 = {
+			isa = PBXBuildFile;
+			fileRef = DEB3CAE066802EA2BED64430;
+		};
+		640B03380220604F731E1759 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "Shared/ProfileVault.swift";
+			sourceTree = "<group>";
+		};
+		7141739AD5E5AF6FBB0F7CA9 = {
+			isa = PBXBuildFile;
+			fileRef = 640B03380220604F731E1759;
+		};
+		A1C145E3AFBDF81B3AD3E695 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "Shared/XrayConfiguration.swift";
+			sourceTree = "<group>";
+		};
+		576CEF3904CC28F38B0DE58D = {
+			isa = PBXBuildFile;
+			fileRef = A1C145E3AFBDF81B3AD3E695;
+		};
+		A32CEFCAA4EB143CB2DBC32E = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				421160CFA25E31F70E60C443,
+				9B57ECBEEEB5D2C4F87CE1B1,
+				938033402F076095A6B6E2A6,
+				7303472F523F67DC2203ECD4,
+				4C8C06475BC5CBE51CE2B6B5,
+				860EBBAC0C431755AD566BAA,
+				375C7A480017D3A843188F28,
+				97DF342C351C04D9393F85BF,
+				A7DCC91F6A581B6FA3649188,
+				371CEE2171A78217BA0A4479,
+				7141739AD5E5AF6FBB0F7CA9,
+				576CEF3904CC28F38B0DE58D,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CBCFE5458CD880839E080210 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "wrapper.framework";
+			path = "System/Library/Frameworks/UIKit.framework";
+			sourceTree = SDKROOT;
+		};
+		6DE21E4ECA2D7EB1B9D16D06 = {
+			isa = PBXBuildFile;
+			fileRef = CBCFE5458CD880839E080210;
+		};
+		B2D577B14156B1916D5BEDC4 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "wrapper.framework";
+			path = "System/Library/Frameworks/NetworkExtension.framework";
+			sourceTree = SDKROOT;
+		};
+		FCF2BFEFF4E8C4D217A77AF4 = {
+			isa = PBXBuildFile;
+			fileRef = B2D577B14156B1916D5BEDC4;
+		};
+		2D65751086342EFAE3B04B9A = {
+			isa = PBXFileReference;
+			lastKnownFileType = "wrapper.framework";
+			path = "System/Library/Frameworks/Security.framework";
+			sourceTree = SDKROOT;
+		};
+		A323AD3C208A157FF3C3688B = {
+			isa = PBXBuildFile;
+			fileRef = 2D65751086342EFAE3B04B9A;
+		};
+		8E312A952934CF858A1C0005 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "wrapper.framework";
+			path = "System/Library/Frameworks/AVFoundation.framework";
+			sourceTree = SDKROOT;
+		};
+		48FD45BE56E415C3EDE7680B = {
+			isa = PBXBuildFile;
+			fileRef = 8E312A952934CF858A1C0005;
+		};
+		24A17972332474BFC7E6F5C3 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6DE21E4ECA2D7EB1B9D16D06,
+				FCF2BFEFF4E8C4D217A77AF4,
+				A323AD3C208A157FF3C3688B,
+				48FD45BE56E415C3EDE7680B,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		28AA5B14AA5E62EF15A72E77 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2532B771085323F5D941E391;
+			buildPhases = (
+				A32CEFCAA4EB143CB2DBC32E,
+				24A17972332474BFC7E6F5C3,
+				DA83A65366024B0A0FBF7026,
+				B153D1EB06D5694794DF6967,
+			);
+			buildRules = (
+
+			);
+			dependencies = (
+				FCAE9B7A744B5CDF1EDAC805,
+			);
+			name = INCY;
+			productName = INCY;
+			productReference = 625A6482E0B96D26AC2E7299;
+			productType = "com.apple.product-type.application";
+		};
+		58444C44F0CBB018552E932B = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = PacketTunnel;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(INCY_BUNDLE_BASE).PacketTunnel";
+				INFOPLIST_FILE = "Config/Tunnel-Info.plist";
+				CODE_SIGN_ENTITLEMENTS = "Config/Tunnel.entitlements";
+				SKIP_INSTALL = YES;
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Native/include/IncyNative.h";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Native/include",
+					"$(SRCROOT)/Vendor/hev-socks5-tunnel/src",
+					"$(SRCROOT)/Vendor/hev-socks5-tunnel/src/misc",
+					"$(SRCROOT)/Vendor/hev-socks5-tunnel/src/core/include",
+					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/lwip/src/include",
+					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/lwip/src/ports/include",
+					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/hev-task-system/include",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lresolv",
+					"-framework",
+					CoreFoundation,
+				);
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+			};
+			name = Debug;
+		};
+		A66E43214C9CD3207755449D = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = PacketTunnel;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(INCY_BUNDLE_BASE).PacketTunnel";
+				INFOPLIST_FILE = "Config/Tunnel-Info.plist";
+				CODE_SIGN_ENTITLEMENTS = "Config/Tunnel.entitlements";
+				SKIP_INSTALL = YES;
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Native/include/IncyNative.h";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Native/include",
+					"$(SRCROOT)/Vendor/hev-socks5-tunnel/src",
+					"$(SRCROOT)/Vendor/hev-socks5-tunnel/src/misc",
+					"$(SRCROOT)/Vendor/hev-socks5-tunnel/src/core/include",
+					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/lwip/src/include",
+					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/lwip/src/ports/include",
+					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/hev-task-system/include",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lresolv",
+					"-framework",
+					CoreFoundation,
+				);
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+			};
+			name = Release;
+		};
+		0E3BB9718D951E7ECF7DF79F = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				58444C44F0CBB018552E932B,
+				A66E43214C9CD3207755449D,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DE5548AAD8FAEE292E2F2881 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "Tunnel/PacketTunnelProvider.swift";
+			sourceTree = "<group>";
+		};
+		9369147223F7395C11F53892 = {
+			isa = PBXBuildFile;
+			fileRef = DE5548AAD8FAEE292E2F2881;
+		};
+		C51E148E6F9E5EA3F7CA972A = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.c.c";
+			path = "Native/PacketBridge.c";
+			sourceTree = "<group>";
+		};
+		602C5F9AC2C8887BF664C619 = {
+			isa = PBXBuildFile;
+			fileRef = C51E148E6F9E5EA3F7CA972A;
+		};
+		236A866EBB847EBF2EC7F076 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.c.c";
+			path = "Native/HevBridge.c";
+			sourceTree = "<group>";
+		};
+		8EDB12E570F700B77A519907 = {
+			isa = PBXBuildFile;
+			fileRef = 236A866EBB847EBF2EC7F076;
+		};
+		891D6FF18937ECC075E2FFBD = {
+			isa = PBXBuildFile;
+			fileRef = DEB3CAE066802EA2BED64430;
+		};
+		4051F30558406B63BC89DECD = {
+			isa = PBXBuildFile;
+			fileRef = 640B03380220604F731E1759;
+		};
+		3E21A72C60188DCDC0540675 = {
+			isa = PBXBuildFile;
+			fileRef = A1C145E3AFBDF81B3AD3E695;
+		};
+		7292755F99E1D07A8C7E4C45 = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9369147223F7395C11F53892,
+				602C5F9AC2C8887BF664C619,
+				8EDB12E570F700B77A519907,
+				891D6FF18937ECC075E2FFBD,
+				4051F30558406B63BC89DECD,
+				3E21A72C60188DCDC0540675,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C7948ACB320E8460A37BAEC8 = {
+			isa = PBXBuildFile;
+			fileRef = B2D577B14156B1916D5BEDC4;
+		};
+		B1716402B488A661113F27F3 = {
+			isa = PBXBuildFile;
+			fileRef = 2D65751086342EFAE3B04B9A;
+		};
+		11E833F054751CAB447A606F = {
+			isa = PBXFileReference;
+			lastKnownFileType = "archive.ar";
+			path = "Native/lib/libIncyXray.a";
+			sourceTree = "<group>";
+		};
+		28E11CBD69797E88AFCB2415 = {
+			isa = PBXBuildFile;
+			fileRef = 11E833F054751CAB447A606F;
+		};
+		477BD3D87107C45FA7857F09 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "archive.ar";
+			path = "Native/lib/libHevTunnel.a";
+			sourceTree = "<group>";
+		};
+		16B47B8566DC372BBBA2C145 = {
+			isa = PBXBuildFile;
+			fileRef = 477BD3D87107C45FA7857F09;
+		};
+		D2DA576F2242453678B6D525 = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C7948ACB320E8460A37BAEC8,
+				B1716402B488A661113F27F3,
+				28E11CBD69797E88AFCB2415,
+				16B47B8566DC372BBBA2C145,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		864275CC77E6BAB67C296B27 = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0E3BB9718D951E7ECF7DF79F;
+			buildPhases = (
+				7292755F99E1D07A8C7E4C45,
+				D2DA576F2242453678B6D525,
+				D44C5F226BA045C37B707F14,
+			);
+			buildRules = (
+
+			);
+			dependencies = (
+
+			);
+			name = PacketTunnel;
+			productName = PacketTunnel;
+			productReference = FBA6C3998EAF9637D3F1D14A;
+			productType = "com.apple.product-type.app-extension";
+		};
+		5E59E1F4361C5EFFDAB645AE = {
+			isa = PBXFileReference;
+			lastKnownFileType = "text.plist.xml";
+			path = "Config/App-Info.plist";
+			sourceTree = "<group>";
+		};
+		85B0DB844BAD754CF7DE23BD = {
+			isa = PBXFileReference;
+			lastKnownFileType = "text.plist.xml";
+			path = "Config/Tunnel-Info.plist";
+			sourceTree = "<group>";
+		};
+		7C17360C0F95AF72C75435BD = {
+			isa = PBXFileReference;
+			lastKnownFileType = "text.plist.xml";
+			path = "Config/App.entitlements";
+			sourceTree = "<group>";
+		};
+		2D853D779BF8172447EBF7BC = {
+			isa = PBXFileReference;
+			lastKnownFileType = "text.plist.xml";
+			path = "Config/Tunnel.entitlements";
+			sourceTree = "<group>";
+		};
+		0D5CF9D10FAB1F8E24B60164 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.c.h";
+			path = "Native/include/IncyNative.h";
+			sourceTree = "<group>";
+		};
+		20031C6995D6366398339FFF = {
+			isa = PBXGroup;
+			children = (
+				625A6482E0B96D26AC2E7299,
+				FBA6C3998EAF9637D3F1D14A,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A7860F72CA51AE2B0D080786 = {
+			isa = PBXGroup;
+			children = (
+				594193EFA70420E10ED02DA8,
+				166B27567711F50E22029B61,
+				DD6F14438C4A9C59F89572F5,
+				181F7325A15496DCD4C7BC63,
+				621F641B7B045E878C3E51AB,
+				FDF7A893F46453A349A3D237,
+				A87BA2898B3486577F10E63A,
+				7C3D903FE24AEB77F6D30742,
+				8B433B6C5F49CE69350E0C16,
+				A7C9B7C04A6BECA9D5EA6CBD,
+				57E7D81138AFBBBD6813F218,
+				3ED3807B35D99A156797D5CF,
+				DEB3CAE066802EA2BED64430,
+				640B03380220604F731E1759,
+				A1C145E3AFBDF81B3AD3E695,
+				DE5548AAD8FAEE292E2F2881,
+				C51E148E6F9E5EA3F7CA972A,
+				236A866EBB847EBF2EC7F076,
+				11E833F054751CAB447A606F,
+				477BD3D87107C45FA7857F09,
+				5E59E1F4361C5EFFDAB645AE,
+				85B0DB844BAD754CF7DE23BD,
+				7C17360C0F95AF72C75435BD,
+				2D853D779BF8172447EBF7BC,
+				0D5CF9D10FAB1F8E24B60164,
+				20031C6995D6366398339FFF,
+			);
+			sourceTree = "<group>";
+		};
+		5CAC6C01AD08DC5BFF8CD5BD = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 594193EFA70420E10ED02DA8;
+			buildSettings = {
+				SDKROOT = iphoneos;
+				IPHONEOS_DEPLOYMENT_TARGET = "12.5";
+				SWIFT_VERSION = "5.0";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				ENABLE_BITCODE = NO;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				ARCHS = arm64;
+				TARGETED_DEVICE_FAMILY = 1;
+				SUPPORTED_PLATFORMS = iphoneos;
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+			};
+			name = Debug;
+		};
+		7CED8640D5377A2B5F3E7D0A = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 594193EFA70420E10ED02DA8;
+			buildSettings = {
+				SDKROOT = iphoneos;
+				IPHONEOS_DEPLOYMENT_TARGET = "12.5";
+				SWIFT_VERSION = "5.0";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				ENABLE_BITCODE = NO;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				ARCHS = arm64;
+				TARGETED_DEVICE_FAMILY = 1;
+				SUPPORTED_PLATFORMS = iphoneos;
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+			};
+			name = Release;
+		};
+		BF5A39BCFD7D39C3032B4E38 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5CAC6C01AD08DC5BFF8CD5BD,
+				7CED8640D5377A2B5F3E7D0A,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		935157643B86313F0B7F1995 = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					28AA5B14AA5E62EF15A72E77 = {
+						CreatedOnToolsVersion = "14.3";
+					};
+					864275CC77E6BAB67C296B27 = {
+						CreatedOnToolsVersion = "14.3";
+					};
+				};
+			};
+			buildConfigurationList = BF5A39BCFD7D39C3032B4E38;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = ru;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				ru,
+				en,
+				Base,
+			);
+			mainGroup = A7860F72CA51AE2B0D080786;
+			productRefGroup = 20031C6995D6366398339FFF;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				28AA5B14AA5E62EF15A72E77,
+				864275CC77E6BAB67C296B27,
+			);
+		};
+	};
+	rootObject = 935157643B86313F0B7F1995;
+}

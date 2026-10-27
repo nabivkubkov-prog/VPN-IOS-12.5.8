@@ -1,0 +1,5 @@
+// Set a unique bundle identifier and your Apple Developer Team ID on the Mac.
+INCY_BUNDLE_BASE = app.incy.legacy
+DEVELOPMENT_TEAM =
+CODE_SIGN_STYLE = Automatic
+

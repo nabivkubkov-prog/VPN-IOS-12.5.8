@@ -1,0 +1,12 @@
+.DS_Store
+build/
+.build/
+DerivedData/
+*.ipa
+*.xcarchive
+xcuserdata/
+Native/lib/*.a
+Native/include/libIncyXray.h
+Vendor/**/build/
+Vendor/**/bin/
+

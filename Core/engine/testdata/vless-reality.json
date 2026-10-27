@@ -1,0 +1,64 @@
+{
+  "log": {
+    "loglevel": "none"
+  },
+  "inbounds": [
+    {
+      "tag": "tun-socks",
+      "listen": "127.0.0.1",
+      "port": 10808,
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth",
+        "udp": true,
+        "ip": "127.0.0.1"
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "proxy",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "192.0.2.1",
+            "port": 443,
+            "users": [
+              {
+                "id": "11111111-1111-4111-8111-111111111111",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "serverName": "www.example.com",
+          "fingerprint": "chrome",
+          "publicKey": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE",
+          "shortId": "abcd",
+          "spiderX": "/"
+        }
+      },
+      "mux": {
+        "enabled": false
+      }
+    }
+  ],
+  "policy": {
+    "levels": {
+      "0": {
+        "handshake": 8,
+        "connIdle": 120,
+        "uplinkOnly": 2,
+        "downlinkOnly": 2,
+        "bufferSize": 4
+      }
+    }
+  }
+}

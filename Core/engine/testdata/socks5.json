@@ -1,0 +1,56 @@
+{
+  "log": {
+    "loglevel": "none"
+  },
+  "inbounds": [
+    {
+      "tag": "tun-socks",
+      "listen": "127.0.0.1",
+      "port": 10808,
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth",
+        "udp": true,
+        "ip": "127.0.0.1"
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "proxy",
+      "protocol": "socks",
+      "settings": {
+        "servers": [
+          {
+            "address": "192.0.2.1",
+            "port": 1080,
+            "users": [
+              {
+                "user": "test",
+                "pass": "fixture-only"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "none"
+      },
+      "mux": {
+        "enabled": false
+      }
+    }
+  ],
+  "policy": {
+    "levels": {
+      "0": {
+        "handshake": 8,
+        "connIdle": 120,
+        "uplinkOnly": 2,
+        "downlinkOnly": 2,
+        "bufferSize": 4
+      }
+    }
+  }
+}

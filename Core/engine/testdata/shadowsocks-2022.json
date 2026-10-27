@@ -1,0 +1,52 @@
+{
+  "log": {
+    "loglevel": "none"
+  },
+  "inbounds": [
+    {
+      "tag": "tun-socks",
+      "listen": "127.0.0.1",
+      "port": 10808,
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth",
+        "udp": true,
+        "ip": "127.0.0.1"
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "proxy",
+      "protocol": "shadowsocks",
+      "settings": {
+        "servers": [
+          {
+            "address": "192.0.2.1",
+            "port": 8388,
+            "method": "2022-blake3-aes-128-gcm",
+            "password": "AQEBAQEBAQEBAQEBAQEBAQ=="
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "none"
+      },
+      "mux": {
+        "enabled": false
+      }
+    }
+  ],
+  "policy": {
+    "levels": {
+      "0": {
+        "handshake": 8,
+        "connIdle": 120,
+        "uplinkOnly": 2,
+        "downlinkOnly": 2,
+        "bufferSize": 4
+      }
+    }
+  }
+}

@@ -1,0 +1,126 @@
+[
+  {
+    "path": "include/hev-socks5-tunnel.h",
+    "target": "../src/hev-main.h"
+  },
+  {
+    "path": "src/core/include/hev-rbtree.h",
+    "target": "../src/hev-rbtree.h"
+  },
+  {
+    "path": "src/core/include/hev-socks5-authenticator.h",
+    "target": "../src/hev-socks5-authenticator.h"
+  },
+  {
+    "path": "src/core/include/hev-socks5-client-tcp.h",
+    "target": "../src/hev-socks5-client-tcp.h"
+  },
+  {
+    "path": "src/core/include/hev-socks5-client-udp.h",
+    "target": "../src/hev-socks5-client-udp.h"
+  },
+  {
+    "path": "src/core/include/hev-socks5-client.h",
+    "target": "../src/hev-socks5-client.h"
+  },
+  {
+    "path": "src/core/include/hev-socks5-logger.h",
+    "target": "../src/hev-socks5-logger.h"
+  },
+  {
+    "path": "src/core/include/hev-socks5-misc.h",
+    "target": "../src/hev-socks5-misc.h"
+  },
+  {
+    "path": "src/core/include/hev-socks5-proto.h",
+    "target": "../src/hev-socks5-proto.h"
+  },
+  {
+    "path": "src/core/include/hev-socks5-server.h",
+    "target": "../src/hev-socks5-server.h"
+  },
+  {
+    "path": "src/core/include/hev-socks5-tcp.h",
+    "target": "../src/hev-socks5-tcp.h"
+  },
+  {
+    "path": "src/core/include/hev-socks5-udp.h",
+    "target": "../src/hev-socks5-udp.h"
+  },
+  {
+    "path": "src/core/include/hev-socks5-user.h",
+    "target": "../src/hev-socks5-user.h"
+  },
+  {
+    "path": "src/core/include/hev-socks5.h",
+    "target": "../src/hev-socks5.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-circular-buffer.h",
+    "target": "../src/lib/io/buffer/hev-circular-buffer.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-memory-allocator.h",
+    "target": "../src/mem/api/hev-memory-allocator-api.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-object-atomic.h",
+    "target": "../src/lib/object/hev-object-atomic.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-object.h",
+    "target": "../src/lib/object/hev-object.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-task-call.h",
+    "target": "../src/kern/task/hev-task-call.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-task-channel-select.h",
+    "target": "../src/kern/itc/hev-task-channel-select.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-task-channel.h",
+    "target": "../src/kern/itc/hev-task-channel.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-task-cond.h",
+    "target": "../src/kern/sync/hev-task-cond.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-task-dns.h",
+    "target": "../src/lib/dns/hev-task-dns.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-task-io-pipe.h",
+    "target": "../src/lib/io/pipe/hev-task-io-pipe.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-task-io-poll.h",
+    "target": "../src/lib/io/poll/hev-task-io-poll.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-task-io-socket.h",
+    "target": "../src/lib/io/socket/hev-task-io-socket.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-task-io.h",
+    "target": "../src/lib/io/basic/hev-task-io.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-task-mutex.h",
+    "target": "../src/kern/sync/hev-task-mutex.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-task-system.h",
+    "target": "../src/kern/core/hev-task-system.h"
+  },
+  {
+    "path": "third-part/hev-task-system/include/hev-task.h",
+    "target": "../src/kern/task/hev-task.h"
+  },
+  {
+    "path": "third-part/yaml/include/yaml.h",
+    "target": "../src/yaml.h"
+  }
+]
