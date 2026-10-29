@@ -62,7 +62,7 @@ final class VPNController {
     }
     private func finish(_ error: Error?) {
         configuring = false; changed()
-        if let error = error { report(error.localizedDescription) }
+        if let error = error { report(VPNErrorMessage.describe(error)) }
     }
     private func changed() { NotificationCenter.default.post(name: .vpnChanged, object: nil) }
     private func report(_ message: String) { NotificationCenter.default.post(name: .vpnError, object: message) }
