@@ -14,7 +14,9 @@ enum SubscriptionRequest {
 
     static func headers(deviceID: String, osVersion: String, model: String) -> [String: String] {
         return [
-            "User-Agent": "INCY/1.0",
+            // Remnawave treats ^INCY/ as supporting full Xray JSON configs.
+            // This legacy client imports URI subscriptions, so advertise it separately.
+            "User-Agent": "INCY-iOS12/1.0",
             "Accept": "text/plain, application/octet-stream;q=0.9",
             "x-hwid": deviceID,
             "x-device-os": "iOS",

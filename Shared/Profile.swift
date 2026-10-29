@@ -188,6 +188,13 @@ public enum ProfileParser {
         guard text.utf8.count <= 1_048_576 else { throw ProfileError.invalid("Подписка больше 1 МБ.") }
         var input = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if !input.contains("://"), let data = decodeBase64(input.filter { !$0.isWhitespace }), let decoded = String(data: data, encoding: .utf8) { input = decoded }
+        let prefix = input.trimmingCharacters(in: .whitespacesAndNewlines).prefix(64).lowercased()
+        if prefix.hasPrefix("{") || prefix.hasPrefix("[") {
+            throw ProfileError.invalid("Подписка выдала JSON-конфигурацию. Для INCY на iOS 12 нужна подписка в формате ссылок VLESS/VMess (Base64).")
+        }
+        if prefix.hasPrefix("<") {
+            throw ProfileError.invalid("Сервис прислал веб-страницу вместо серверов. Вставьте личную ссылку подписки из бота VPN-сервиса.")
+        }
         let lines = input.components(separatedBy: .newlines).map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty && !$0.hasPrefix("#") }
         guard !lines.isEmpty, lines.count <= 256 else { throw ProfileError.invalid("Подписка должна содержать от 1 до 256 ссылок.") }
         return try lines.enumerated().map { offset, line in
