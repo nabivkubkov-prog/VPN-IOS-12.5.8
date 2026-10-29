@@ -2,6 +2,12 @@ name: iOS Build
 
 on:
   workflow_dispatch:
+    inputs:
+      jailbreak:
+        description: 'Also package INCY JB for an active jailbreak with AppSync'
+        required: false
+        type: boolean
+        default: false
   push:
     branches: [main]
 
@@ -66,5 +72,18 @@ jobs:
         with:
           name: INCY-iOS-12.5.8-unsigned
           path: build/INCY-iOS-12.5.8-unsigned.ipa
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Package jailbreak IPA with VPN entitlements
+        if: ${{ inputs.jailbreak }}
+        run: node Scripts/package-jailbreak.mjs "$RUNNER_TEMP/INCY.xcarchive/Products/Applications/INCY.app" "$GITHUB_WORKSPACE/build/INCY-iOS-12.5.8-jailbreak.ipa"
+
+      - name: Upload jailbreak IPA
+        if: ${{ inputs.jailbreak }}
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: INCY-iOS-12.5.8-jailbreak
+          path: build/INCY-iOS-12.5.8-jailbreak.ipa
           if-no-files-found: error
           compression-level: 0
