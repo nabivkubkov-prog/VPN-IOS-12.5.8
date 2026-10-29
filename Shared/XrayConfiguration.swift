@@ -1,10 +1,19 @@
 import Foundation
+#if canImport(Darwin)
+import Darwin
+#else
+import Glibc
+#endif
 
 public enum XrayConfiguration {
     public static let socksPort = 10808
-    public static func make(profile p: Profile, dns: String = "1.1.1.1") throws -> Data {
+    public static func make(profile p: Profile, dns: String = "1.1.1.1", upstreamIP: String? = nil) throws -> Data {
         try p.validate()
         guard ["1.1.1.1", "8.8.8.8", "9.9.9.9"].contains(dns) else { throw ProfileError.invalid("Выберите DNS из списка.") }
+        if let ip = upstreamIP, !isIPAddress(ip) { throw ProfileError.invalid("Не удалось определить IP сервера.") }
+        // Resolve the dial address before installing VPN DNS/routes. Keep the
+        // original profile for certificate names and transport virtual hosts.
+        let address = upstreamIP ?? p.host
         var settings: [String: Any]
         let protocolName: String
         switch p.kind {
@@ -13,15 +22,15 @@ public enum XrayConfiguration {
             var user: [String: Any] = ["id": p.credential, "level": 0]
             if p.kind == "vless" { user["encryption"] = "none"; if !p.flow.isEmpty { user["flow"] = p.flow } }
             else { user["security"] = "auto"; user["alterId"] = 0 }
-            settings = ["vnext": [["address": p.host, "port": p.port, "users": [user]]]]
+            settings = ["vnext": [["address": address, "port": p.port, "users": [user]]]]
         case "trojan", "ss":
             protocolName = p.kind == "ss" ? "shadowsocks" : "trojan"
-            var server: [String: Any] = ["address": p.host, "port": p.port, "password": p.credential, "level": 0]
+            var server: [String: Any] = ["address": address, "port": p.port, "password": p.credential, "level": 0]
             if p.kind == "ss" { server["method"] = p.method }
             settings = ["servers": [server]]
         default:
             protocolName = p.kind
-            var server: [String: Any] = ["address": p.host, "port": p.port]
+            var server: [String: Any] = ["address": address, "port": p.port]
             if !p.username.isEmpty { server["users"] = [["user": p.username, "pass": p.credential]] }
             settings = ["servers": [server]]
         }
@@ -35,10 +44,22 @@ public enum XrayConfiguration {
                 var tls = stream["tlsSettings"] as! [String: Any]; tls["alpn"] = p.alpn; stream["tlsSettings"] = tls
             }
         }
-        if p.transport == "ws" { stream["wsSettings"] = ["path": p.path, "headers": p.hostHeader.isEmpty ? [:] : ["Host": p.hostHeader]] }
+        if p.transport == "ws" {
+            var host = p.hostHeader
+            if host.isEmpty && address != p.host {
+                let defaultPort = p.security == "tls" ? 443 : 80
+                host = p.port == defaultPort ? (p.host.contains(":") ? "[\(p.host)]" : p.host) : p.endpoint
+            }
+            stream["wsSettings"] = ["path": p.path, "headers": host.isEmpty ? [:] : ["Host": host]]
+        }
         if p.transport == "grpc" {
             var grpc: [String: Any] = ["serviceName": p.serviceName, "multiMode": p.grpcMultiMode ?? false]
             if let authority = p.grpcAuthority, !authority.isEmpty { grpc["authority"] = authority }
+            else if address != p.host && p.security != "tls" {
+                // Xray 1.8.24 uses the domain alone without security, and the
+                // original dial endpoint as gRPC's default with REALITY.
+                grpc["authority"] = p.security == "reality" ? p.endpoint : p.host
+            }
             stream["grpcSettings"] = grpc
         }
         if p.transport == "h2" { stream["httpSettings"] = ["path": p.path, "host": [p.hostHeader.isEmpty ? p.host : p.hostHeader]] }
@@ -61,6 +82,11 @@ public enum XrayConfiguration {
             j["routing"] = ["domainStrategy": "AsIs", "rules": [["type": "field", "inboundTag": ["tun-socks"], "port": "53", "outboundTag": "dns-out"]]]
         }
         return try JSONSerialization.data(withJSONObject: j, options: [.sortedKeys])
+    }
+
+    public static func isIPAddress(_ value: String) -> Bool {
+        var ipv4 = in_addr(); var ipv6 = in6_addr()
+        return value.withCString { inet_pton(AF_INET, $0, &ipv4) == 1 || inet_pton(AF_INET6, $0, &ipv6) == 1 }
     }
 }
 

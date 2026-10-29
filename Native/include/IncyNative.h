@@ -3,6 +3,10 @@
 #include <stddef.h>
 #include <stdint.h>
 char *IncyXrayStart(char *config);
+// Returns a numeric upstream IP or a fixed DNS_FAILED/TCP_FAILED marker.
+char *IncyXrayResolve(char *host, int port);
+// 0: real HTTP response through SOCKS; other results are fixed error codes.
+int IncyXrayProbe(int port);
 void IncyXrayStop(void);
 void IncyXrayFree(char *value);
 typedef void (*IncyTunnelReadyCallback)(void *context);

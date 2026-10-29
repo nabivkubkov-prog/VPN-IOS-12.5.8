@@ -2,6 +2,7 @@ package engine
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"runtime"
 	"runtime/debug"
@@ -35,8 +36,10 @@ import (
 )
 
 type Engine struct {
-	mu       sync.Mutex
-	instance *core.Instance
+	mu         sync.Mutex
+	instance   *core.Instance
+	runContext context.Context
+	cancelRun  context.CancelFunc
 }
 
 func init() {
@@ -77,6 +80,7 @@ func (e *Engine) Start(config []byte) error {
 		return err
 	}
 	e.instance = instance
+	e.runContext, e.cancelRun = context.WithCancel(context.Background())
 	return nil
 }
 
@@ -86,8 +90,11 @@ func (e *Engine) Stop() error {
 	if e.instance == nil {
 		return nil
 	}
+	e.cancelRun()
 	err := e.instance.Close()
 	e.instance = nil
+	e.runContext = nil
+	e.cancelRun = nil
 	debug.FreeOSMemory()
 	return err
 }

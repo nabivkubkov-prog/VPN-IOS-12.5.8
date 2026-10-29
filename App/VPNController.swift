@@ -27,6 +27,7 @@ final class VPNController {
         guard let p = ProfileStore.shared.selected else { report("Сначала добавьте профиль сервера."); return }
         do { try p.validate() }
         catch { report(error.localizedDescription); return }
+        try? ProfileVault.saveTunnelFailure(nil)
         configuring = true; changed()
         load { error in
             if let error = error { self.finish(error); return }
@@ -66,7 +67,10 @@ final class VPNController {
         configuring = false; changed()
         if let error = error { report(VPNErrorMessage.describe(error)) }
     }
-    private func changed() { NotificationCenter.default.post(name: .vpnChanged, object: nil) }
+    private func changed() {
+        NotificationCenter.default.post(name: .vpnChanged, object: nil)
+        if !configuring && [.disconnected, .invalid].contains(status), let message = ProfileVault.takeTunnelFailure() { report(message) }
+    }
     private func report(_ message: String) { NotificationCenter.default.post(name: .vpnError, object: message) }
 }
 

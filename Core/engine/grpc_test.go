@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net"
@@ -29,7 +30,7 @@ func TestVLESSOverGRPCGunAndMulti(t *testing.T) {
 				"log": map[string]any{"loglevel": "none"},
 				"inbounds": []any{map[string]any{
 					"listen": "127.0.0.1", "port": serverPort, "protocol": "vless",
-					"settings": map[string]any{"decryption": "none", "clients": []any{map[string]any{"id": uuid}}},
+					"settings":       map[string]any{"decryption": "none", "clients": []any{map[string]any{"id": uuid}}},
 					"streamSettings": map[string]any{"network": "grpc", "security": "none", "grpcSettings": grpcSettings},
 				}},
 				"outbounds": []any{map[string]any{"protocol": "freedom"}},
@@ -57,6 +58,12 @@ func TestVLESSOverGRPCGunAndMulti(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer clientEngine.Stop()
+			probeContext, cancelProbe := context.WithTimeout(context.Background(), 5*time.Second)
+			probeResult := probeSOCKS(probeContext, net.JoinHostPort("127.0.0.1", portString(clientPort)), []string{origin.URL})
+			cancelProbe()
+			if probeResult != ProbeSuccess {
+				t.Fatal("gRPC upstream probe failed", probeResult)
+			}
 			dialer, err := proxy.SOCKS5("tcp", net.JoinHostPort("127.0.0.1", portString(clientPort)), nil, &net.Dialer{Timeout: 3 * time.Second})
 			if err != nil {
 				t.Fatal(err)
