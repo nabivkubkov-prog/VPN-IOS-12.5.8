@@ -36,7 +36,11 @@ public enum XrayConfiguration {
             }
         }
         if p.transport == "ws" { stream["wsSettings"] = ["path": p.path, "headers": p.hostHeader.isEmpty ? [:] : ["Host": p.hostHeader]] }
-        if p.transport == "grpc" { stream["grpcSettings"] = ["serviceName": p.serviceName] }
+        if p.transport == "grpc" {
+            var grpc: [String: Any] = ["serviceName": p.serviceName, "multiMode": p.grpcMultiMode ?? false]
+            if let authority = p.grpcAuthority, !authority.isEmpty { grpc["authority"] = authority }
+            stream["grpcSettings"] = grpc
+        }
         if p.transport == "h2" { stream["httpSettings"] = ["path": p.path, "host": [p.hostHeader.isEmpty ? p.host : p.hostHeader]] }
         // Only one outbound: DNS packets and all destinations go through the selected proxy.
         // No direct fallback is added when the proxy fails.

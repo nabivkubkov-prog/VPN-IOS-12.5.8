@@ -51,15 +51,28 @@ final class ImportController: UIViewController, UITextViewDelegate {
     }
     private func store(_ text: String) {
         do {
-            let profiles = try ProfileParser.parseBatch(text)
+            let parsed = try ProfileParser.parseSubscription(text)
             let before = ProfileStore.shared.profiles.count
-            try ProfileStore.shared.add(profiles)
+            try ProfileStore.shared.add(parsed.profiles)
             let added = ProfileStore.shared.profiles.count - before
             status.text = added == 0 ? "Эти профили уже добавлены." : "Добавлено профилей: \(added)."
-            if added > 0 { input.text = ""; dismiss(animated: true) }
+            if !parsed.omissions.isEmpty {
+                let details = parsed.omissions.prefix(3).joined(separator: "\n")
+                let message = "Совместимых серверов: \(parsed.profiles.count). Добавлено: \(added). Пропущено: \(parsed.omissions.count).\n\n\(details)"
+                status.text = "Добавлено: \(added). Пропущено: \(parsed.omissions.count)."
+                input.text = ""
+                let alert = UIAlertController(title: "Импорт завершён", message: message, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "К серверам", style: .default) { [weak self] _ in self?.close() })
+                present(alert, animated: true)
+            } else if added > 0 { input.text = ""; close() }
         } catch { status.text = error.localizedDescription }
     }
-    @objc private func close() { loader?.cancel(); dismiss(animated: true) }
+    @objc private func close() {
+        loader?.cancel()
+        if let navigation = navigationController, navigation.viewControllers.count > 1 {
+            navigation.popViewController(animated: true)
+        } else { dismiss(animated: true) }
+    }
     deinit { loader?.cancel() }
 }
 

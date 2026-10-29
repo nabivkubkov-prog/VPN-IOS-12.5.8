@@ -22,7 +22,7 @@ func TestProtocolFixtures(t *testing.T) {
 	}
 	if directory := os.Getenv("INCY_CONFIG_INPUT"); directory != "" {
 		swiftFiles, err := filepath.Glob(filepath.Join(directory, "*.json"))
-		if err != nil || len(swiftFiles) != 7 { t.Fatal("Missing Swift-generated fixtures", err) }
+		if err != nil || len(swiftFiles) != 11 { t.Fatal("Missing Swift-generated fixtures", err) }
 		files = append(files, swiftFiles...)
 	}
 	for _, file := range files {
