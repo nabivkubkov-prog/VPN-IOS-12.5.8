@@ -16,15 +16,25 @@ enum SubscriptionResponse {
         default:
             throw ProfileError.invalid("Ошибка загрузки подписки (HTTP \(http.statusCode)). Повторите попытку позже.")
         }
-        if http.value(forHTTPHeaderField: "x-hwid-not-supported")?.lowercased() == "true" {
+        if header("x-hwid-not-supported", in: http)?.lowercased() == "true" {
             throw ProfileError.invalid(serviceNotice("App not supported"))
         }
-        if http.value(forHTTPHeaderField: "x-hwid-max-devices-reached")?.lowercased() == "true" {
+        if header("x-hwid-max-devices-reached", in: http)?.lowercased() == "true" {
             throw ProfileError.invalid(serviceNotice("Limit of devices reached"))
         }
         if response.expectedContentLength > Int64(maximumBytes) {
             throw ProfileError.invalid("Полученный список серверов превышает 1 МБ.")
         }
+    }
+
+    // HTTPURLResponse.value(forHTTPHeaderField:) requires iOS 13 / macOS 10.15.
+    private static func header(_ name: String, in response: HTTPURLResponse) -> String? {
+        for (key, value) in response.allHeaderFields {
+            if let key = key as? String, key.caseInsensitiveCompare(name) == .orderedSame {
+                return (value as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        return nil
     }
 
     static func append(_ data: Data, to bytes: inout Data) throws {

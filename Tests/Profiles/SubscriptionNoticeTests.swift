@@ -33,11 +33,13 @@ final class SubscriptionNoticeTests: XCTestCase {
 
     func testHTTP200ServiceRejectionHeadersAreNotAcceptedAsSubscriptions() throws {
         for flag in ["x-hwid-not-supported", "x-hwid-max-devices-reached"] {
-            let response = try XCTUnwrap(HTTPURLResponse(url: URL(string: "https://example.invalid/subscription/private-token")!,
-                                                       statusCode: 200, httpVersion: "HTTP/1.1", headerFields: [flag: "true"]))
-            XCTAssertThrowsError(try SubscriptionResponse.validate(response)) { error in
-                XCTAssertFalse(error.localizedDescription.contains("private-token"))
-                XCTAssertFalse(error.localizedDescription.contains("1 МБ"))
+            for field in [flag, flag.uppercased()] {
+                let response = try XCTUnwrap(HTTPURLResponse(url: URL(string: "https://example.invalid/subscription/private-token")!,
+                                                           statusCode: 200, httpVersion: "HTTP/1.1", headerFields: [field: " TRUE "]))
+                XCTAssertThrowsError(try SubscriptionResponse.validate(response)) { error in
+                    XCTAssertFalse(error.localizedDescription.contains("private-token"))
+                    XCTAssertFalse(error.localizedDescription.contains("1 МБ"))
+                }
             }
         }
     }
