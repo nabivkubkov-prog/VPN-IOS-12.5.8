@@ -8,7 +8,7 @@ const id = name => createHash('md5').update('INCY:' + name).digest('hex').slice(
 function object(name, isa, fields) { const key = id(name); objects[key] = { isa, ...fields }; return key; }
 const appSources = fs.readdirSync(path.join(root, 'App')).filter(f => f.endsWith('.swift')).map(f => 'App/' + f);
 const shared = fs.readdirSync(path.join(root, 'Shared')).filter(f => f.endsWith('.swift')).map(f => 'Shared/' + f);
-const tunnelSources = ['Tunnel/PacketTunnelProvider.swift', 'Native/PacketBridge.c', 'Native/HevBridge.c'];
+const tunnelSources = ['Tunnel/PacketTunnelProvider.swift', 'Native/PacketBridge.c', 'Native/HevBridge.c', 'Native/HevDiagnostics.c'];
 const refs = {};
 function file(p, type) {
   return refs[p] ??= object('file:' + p, 'PBXFileReference', { lastKnownFileType: type ?? (p.endsWith('.swift') ? 'sourcecode.swift' : p.endsWith('.c') ? 'sourcecode.c.c' : p.endsWith('.h') ? 'sourcecode.c.h' : 'text'), path: p, sourceTree: '<group>' });
