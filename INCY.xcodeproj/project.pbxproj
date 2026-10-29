@@ -373,6 +373,10 @@
 					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/lwip/src/ports/include",
 					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/hev-task-system/include",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Native/lib",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lresolv",
@@ -413,6 +417,10 @@
 					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/lwip/src/include",
 					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/lwip/src/ports/include",
 					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/hev-task-system/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Native/lib",
 				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
