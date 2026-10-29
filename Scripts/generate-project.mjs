@@ -51,7 +51,7 @@ const embed = object('embed', 'PBXCopyFilesBuildPhase', { buildActionMask: 21474
 const proxy = object('dependency:proxy', 'PBXContainerItemProxy', { containerPortal: projectID, proxyType: 1, remoteGlobalIDString: tunnelID, remoteInfo: 'PacketTunnel' });
 const dependency = object('dependency', 'PBXTargetDependency', { target: tunnelID, targetProxy: proxy });
 object('target:app', 'PBXNativeTarget', {
-  buildConfigurationList: configs('app', { PRODUCT_NAME: 'INCY', PRODUCT_BUNDLE_IDENTIFIER: '$(INCY_BUNDLE_BASE)', INFOPLIST_FILE: 'Config/App-Info.plist', CODE_SIGN_ENTITLEMENTS: 'Config/App.entitlements', ASSETCATALOG_COMPILER_APPICON_NAME: 'AppIcon', LD_RUNPATH_SEARCH_PATHS: ['$(inherited)', '@executable_path/Frameworks'] }),
+  buildConfigurationList: configs('app', { PRODUCT_NAME: 'INCY', PRODUCT_BUNDLE_IDENTIFIER: '$(INCY_BUNDLE_BASE)', INFOPLIST_FILE: 'Config/App-Info.plist', CODE_SIGN_ENTITLEMENTS: 'Config/App.entitlements', ASSETCATALOG_COMPILER_APPICON_NAME: 'AppIcon', ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS: 'NO', ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: 'NO', LD_RUNPATH_SEARCH_PATHS: ['$(inherited)', '@executable_path/Frameworks'] }),
   buildPhases: [sources('app', [...appSources, ...shared]), frameworks('app', ['UIKit', 'NetworkExtension', 'Security', 'AVFoundation']), appResources, embed], buildRules: [], dependencies: [dependency], name: 'INCY', productName: 'INCY', productReference: appProduct, productType: 'com.apple.product-type.application',
 });
 object('target:tunnel', 'PBXNativeTarget', {

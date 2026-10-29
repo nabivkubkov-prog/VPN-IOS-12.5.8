@@ -47,6 +47,9 @@ jobs:
             -archivePath "$RUNNER_TEMP/INCY.xcarchive" \
             CODE_SIGNING_ALLOWED=NO
 
+      - name: Verify iOS 12 executable compatibility
+        run: node Scripts/check-ios-compatibility.mjs "$RUNNER_TEMP/INCY.xcarchive/Products/Applications/INCY.app"
+
       - name: Package unsigned IPA
         run: |
           set -euo pipefail
