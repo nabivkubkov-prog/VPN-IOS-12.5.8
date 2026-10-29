@@ -71,7 +71,9 @@ final class SubscriptionLoader: NSObject, URLSessionDataDelegate {
         self.completion = completion
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 20; config.timeoutIntervalForResource = 30
-        config.httpAdditionalHeaders = ["User-Agent": "INCY-iOS12/1.0", "Accept": "text/plain"]
+        config.httpAdditionalHeaders = SubscriptionRequest.headers(deviceID: SubscriptionRequest.deviceID(),
+                                                                  osVersion: UIDevice.current.systemVersion,
+                                                                  model: UIDevice.current.model)
         session = URLSession(configuration: config, delegate: self, delegateQueue: .main)
         session?.dataTask(with: url).resume()
     }

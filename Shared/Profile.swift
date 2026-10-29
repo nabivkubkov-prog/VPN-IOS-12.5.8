@@ -45,6 +45,9 @@ public struct Profile: Codable, Equatable {
             if !condition { throw ProfileError.invalid(message) }
         }
         try require(["vless", "vmess", "trojan", "ss", "socks", "http"].contains(kind), "Протокол не поддерживается.")
+        if kind == "vless", host == "0.0.0.0", port == 1, credential == "00000000-0000-0000-0000-000000000000" {
+            throw ProfileError.invalid(SubscriptionResponse.serviceNotice(name))
+        }
         try require(!host.isEmpty && host.utf8.count <= 253 && !host.contains(where: { $0.isWhitespace }) && !host.contains("/") && !host.contains("@"), "Некорректный адрес сервера.")
         try require((1...65535).contains(port), "Порт должен быть от 1 до 65535.")
         try require(["tcp", "ws", "grpc", "h2"].contains(transport), "Поддерживаются TCP, WebSocket, gRPC и HTTP/2.")

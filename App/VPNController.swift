@@ -25,6 +25,8 @@ final class VPNController {
         guard !configuring else { return }
         if isBusy { manager?.connection.stopVPNTunnel(); return }
         guard let p = ProfileStore.shared.selected else { report("Сначала добавьте профиль сервера."); return }
+        do { try p.validate() }
+        catch { report(error.localizedDescription); return }
         configuring = true; changed()
         load { error in
             if let error = error { self.finish(error); return }

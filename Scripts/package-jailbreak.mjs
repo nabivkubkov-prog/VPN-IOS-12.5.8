@@ -6,6 +6,9 @@ import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// Synthetic namespace for ad-hoc jailbreak signing, not an Apple Developer team.
+// NetworkExtension strips the first component of application-identifier for IPC.
+const jailbreakTeam = 'INCYJB0001';
 const run = (file, args, options = {}) => execFileSync(file, args, { encoding: 'utf8', ...options });
 const readPlist = file => JSON.parse(run('/usr/bin/plutil', ['-convert', 'json', '-o', '-', file]));
 const writePlist = (file, value) => run('/usr/bin/plutil', ['-convert', 'xml1', '-o', file, '-'], { input: JSON.stringify(value) });
@@ -18,12 +21,13 @@ function entitlements(template, identifier, group) {
     if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, resolve(item)]));
     return value;
   };
-  const result = { ...resolve(source), 'application-identifier': identifier };
+  const result = { ...resolve(source), 'application-identifier': `${jailbreakTeam}.${identifier}`, 'com.apple.developer.team-identifier': jailbreakTeam };
   if (JSON.stringify(result).includes('$(')) throw new Error(`${template}: unresolved Xcode entitlement variable`);
   if (!isDeepStrictEqual(result['com.apple.developer.networking.networkextension'], ['packet-tunnel-provider'])) {
     throw new Error(`${template}: missing packet-tunnel-provider entitlement`);
   }
   if (!isDeepStrictEqual(result['keychain-access-groups'], [group])) throw new Error(`${template}: incorrect shared Keychain group`);
+  if (!isDeepStrictEqual(result['com.apple.developer.networking.vpn.api'], ['allow-vpn'])) throw new Error(`${template}: missing VPN API entitlement`);
   return result;
 }
 
@@ -54,7 +58,13 @@ function verify(bundle, expected) {
   const xml = run('/usr/bin/codesign', ['--display', '--entitlements', '-', '--xml', bundle]);
   const actual = JSON.parse(run('/usr/bin/plutil', ['-convert', 'json', '-o', '-', '-'], { input: xml }));
   if (!isDeepStrictEqual(actual, expected)) throw new Error(`${bundle}: signed entitlements do not match the requested VPN/Keychain permissions`);
-  console.log(JSON.stringify({ bundle: readPlist(path.join(bundle, 'Info.plist')).CFBundleIdentifier, entitlements: actual }, null, 2));
+  const bundleIdentifier = readPlist(path.join(bundle, 'Info.plist')).CFBundleIdentifier;
+  const applicationIdentifier = actual['application-identifier'];
+  const separator = applicationIdentifier.indexOf('.');
+  if (separator !== 10 || applicationIdentifier.slice(separator + 1) !== bundleIdentifier || applicationIdentifier.slice(0, separator) !== actual['com.apple.developer.team-identifier']) {
+    throw new Error(`${bundle}: NetworkExtension cannot derive its bundle identifier from the signed application identifier`);
+  }
+  console.log(JSON.stringify({ bundle: bundleIdentifier, entitlements: actual }, null, 2));
 }
 
 let staging;
