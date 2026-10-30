@@ -1,20 +1,30 @@
-
 name: iOS Build
 
 on:
   workflow_dispatch:
+    inputs:
+      jailbreak:
+        description: 'Also package INCY JB for an active jailbreak with AppSync'
+        required: false
+        type: boolean
+        default: false
   push:
     branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: macos-15-intel
+    timeout-minutes: 45
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
 
       - name: Select Xcode
         run: |
@@ -22,15 +32,15 @@ jobs:
           xcodebuild -list -project INCY.xcodeproj
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7.0.0
         with:
-          go-version-file: Core/go.mod
+          go-version: '1.22.12'
+          cache-dependency-path: Core/go.sum
 
-      - name: Check project files
+      - name: Verify project and build native libraries
         run: |
-          git submodule status
-          ls -la
-          ls -la Vendor
+          git submodule status --recursive
+          bash Scripts/check-macos.sh
 
       - name: Build iOS archive
         run: |
@@ -42,3 +52,38 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/INCY.xcarchive" \
             CODE_SIGNING_ALLOWED=NO
+
+      - name: Verify iOS 12 executable compatibility
+        run: node Scripts/check-ios-compatibility.mjs "$RUNNER_TEMP/INCY.xcarchive/Products/Applications/INCY.app"
+
+      - name: Package unsigned IPA
+        run: |
+          set -euo pipefail
+          app="$RUNNER_TEMP/INCY.xcarchive/Products/Applications/INCY.app"
+          test -d "$app/PlugIns/PacketTunnel.appex"
+          mkdir -p "$RUNNER_TEMP/incy-ipa/Payload" "$GITHUB_WORKSPACE/build"
+          cp -R "$app" "$RUNNER_TEMP/incy-ipa/Payload/"
+          cd "$RUNNER_TEMP/incy-ipa"
+          /usr/bin/zip -qry "$GITHUB_WORKSPACE/build/INCY-iOS-12.5.8-unsigned.ipa" Payload
+          unzip -t "$GITHUB_WORKSPACE/build/INCY-iOS-12.5.8-unsigned.ipa"
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: INCY-iOS-12.5.8-unsigned
+          path: build/INCY-iOS-12.5.8-unsigned.ipa
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Package jailbreak IPA with VPN entitlements
+        if: ${{ inputs.jailbreak }}
+        run: node Scripts/package-jailbreak.mjs "$RUNNER_TEMP/INCY.xcarchive/Products/Applications/INCY.app" "$GITHUB_WORKSPACE/build/INCY-iOS-12.5.8-jailbreak.ipa"
+
+      - name: Upload jailbreak IPA
+        if: ${{ inputs.jailbreak }}
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: INCY-iOS-12.5.8-jailbreak
+          path: build/INCY-iOS-12.5.8-jailbreak.ipa
+          if-no-files-found: error
+          compression-level: 0

@@ -6,6 +6,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     private let control = DispatchQueue(label: "incy.tunnel.control")
     private let io = DispatchQueue(label: "incy.tunnel.packets", qos: .userInitiated)
     private let worker = DispatchQueue(label: "incy.tunnel.hev", qos: .userInitiated)
+    private let bootstrap = DispatchQueue(label: "incy.tunnel.bootstrap", qos: .userInitiated, attributes: .concurrent)
     private var appFD: Int32 = -1
     private var source: DispatchSourceRead?
     private var active = false
@@ -16,6 +17,13 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     private var upload: UInt64 = 0
     private var download: UInt64 = 0
     private var dropped: UInt64 = 0
+    private var forwardedIPv4: UInt64 = 0
+    private var forwardedIPv6: UInt64 = 0
+    private var returnedPackets: UInt64 = 0
+    private var writeFailures: UInt64 = 0
+    private var largestInput = 0
+    private var largestOutput = 0
+    private var diagnosticsTimer: DispatchSourceTimer?
     private var workerRunning = false
     private var startCompletion: ((Error?) -> Void)?
     private var stopCompletions = [() -> Void]()
@@ -42,6 +50,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
             self.runID = UUID()
             let token = self.runID
             self.stopping = false
+            try? ProfileVault.saveTunnelFailure(nil)
             do {
                 guard let proto = self.protocolConfiguration as? NETunnelProviderProtocol,
                       let config = proto.providerConfiguration, let id = config["profileID"] as? String else {
@@ -49,38 +58,101 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
                 }
                 let profile = try ProfileVault.load(id)
                 let dns = config["dns"] as? String ?? "1.1.1.1"
-                let data = try XrayConfiguration.make(profile: profile, dns: dns)
-                guard let json = String(data: data, encoding: .utf8), let cstring = strdup(json) else {
-                    throw ProfileError.invalid("Не удалось подготовить конфигурацию.")
+                try profile.validate()
+                NSLog("INCY phase=bootstrap protocol=%@ transport=%@ security=%@", profile.kind, profile.transport, profile.security)
+                self.resolveServer(profile: profile, dns: dns, token: token)
+            } catch { self.cleanupCore(); self.finishStart(error) }
+        }
+    }
+
+    private func resolveServer(profile: Profile, dns: String, token: UUID) {
+        bootstrap.async {
+            let address: String? = profile.host.withCString { pointer in
+                guard let host = strdup(pointer) else { return nil }
+                defer { free(host) }
+                guard let result = IncyXrayResolve(host, Int32(profile.port)) else { return nil }
+                defer { IncyXrayFree(result) }
+                return String(cString: result)
+            }
+            self.control.async {
+                guard self.runID == token && !self.stopping && self.startCompletion != nil else { return }
+                guard let ip = address, XrayConfiguration.isIPAddress(ip) else {
+                    let dnsFailed = address == "DNS_FAILED"
+                    NSLog("INCY phase=bootstrap-failed dns=%d", dnsFailed ? 1 : 0)
+                    self.finishStart(ProfileError.invalid(dnsFailed
+                        ? "Не удалось определить адрес VPN-сервера. Проверьте интернет без VPN или выберите другой сервер."
+                        : "Не удалось связаться с VPN-сервером. Проверьте интернет без VPN или выберите другой сервер."))
+                    return
                 }
-                defer { free(cstring) }
-                if let error = IncyXrayStart(cstring) {
-                    IncyXrayFree(error)
-                    // Core errors may include credentials: never expose their raw text.
-                    throw ProfileError.invalid("Сетевое ядро не приняло профиль. Проверьте протокол и параметры сервера.")
+                do { try self.startCore(profile: profile, dns: dns, ip: ip, token: token) }
+                catch { self.cleanupCore(); self.finishStart(error) }
+            }
+        }
+    }
+
+    private func startCore(profile: Profile, dns: String, ip: String, token: UUID) throws {
+        let data = try XrayConfiguration.make(profile: profile, dns: dns, upstreamIP: ip)
+        guard let json = String(data: data, encoding: .utf8), let cstring = strdup(json) else {
+            throw ProfileError.invalid("Не удалось подготовить конфигурацию.")
+        }
+        defer { free(cstring) }
+        if let error = IncyXrayStart(cstring) {
+            IncyXrayFree(error)
+            // Core errors may include credentials: never expose their raw text.
+            throw ProfileError.invalid("Сетевое ядро не приняло профиль. Проверьте протокол и параметры сервера.")
+        }
+        engineStarted = true
+        NSLog("INCY phase=proxy-check")
+        bootstrap.async {
+            let result = IncyXrayProbe(Int32(XrayConfiguration.socksPort))
+            self.control.async {
+                guard self.runID == token && !self.stopping && self.engineStarted && self.startCompletion != nil else { return }
+                NSLog("INCY phase=proxy-check-finished result=%d", result)
+                guard result == 0 else {
+                    self.cleanupCore()
+                    self.finishStart(ProfileError.invalid("Сервер не передаёт данные через VPN. Выберите другой сервер в подписке или проверьте параметры профиля."))
+                    return
                 }
-                self.engineStarted = true
-                let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "127.0.0.1")
-                settings.mtu = 1280
-                let ipv4 = NEIPv4Settings(addresses: ["198.18.0.1"], subnetMasks: ["255.255.255.0"])
-                ipv4.includedRoutes = [NEIPv4Route.default()]
-                settings.ipv4Settings = ipv4
-                let ipv6 = NEIPv6Settings(addresses: ["fd00:1::1"], networkPrefixLengths: [64])
-                ipv6.includedRoutes = [NEIPv6Route.default()]
-                settings.ipv6Settings = ipv6
-                let dnsSettings = NEDNSSettings(servers: [dns])
-                dnsSettings.matchDomains = [""]
-                settings.dnsSettings = dnsSettings
-                // Outbound sockets originate in the provider process and bypass its VPN,
-                // as specified by NetworkExtension. No broad server/LAN route exemptions.
-                self.setTunnelNetworkSettings(settings) { error in
+                self.applySettings(dns: dns, ip: ip, token: token)
+            }
+        }
+    }
+
+    private func applySettings(dns: String, ip: String, token: UUID) {
+        let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: ip)
+        settings.mtu = 1280
+        let ipv4 = NEIPv4Settings(addresses: ["198.18.0.1"], subnetMasks: ["255.255.255.0"])
+        ipv4.includedRoutes = [NEIPv4Route.default()]
+        settings.ipv4Settings = ipv4
+        let ipv6 = NEIPv6Settings(addresses: ["fd00:1::1"], networkPrefixLengths: [64])
+        ipv6.includedRoutes = [NEIPv6Route.default()]
+        settings.ipv6Settings = ipv6
+        let dnsSettings = NEDNSSettings(servers: [dns])
+        dnsSettings.matchDomains = [""]
+        settings.dnsSettings = dnsSettings
+        // Provider sockets bypass its own VPN. Only bootstrap DNS and the
+        // selected server TCP connection run before routes are installed.
+        NSLog("INCY phase=network-settings")
+        setTunnelNetworkSettings(settings) { error in
+            self.control.async {
+                guard self.runID == token && !self.stopping && self.engineStarted else { return }
+                if let error = error { self.cleanupCore(); self.finishStart(error); return }
+                // Verify the same IPv6 SOCKS endpoint after iOS installs the
+                // routes; the pre-route core check alone missed this failure.
+                self.bootstrap.async {
+                    let result = IncyXrayProbe(Int32(XrayConfiguration.socksPort))
                     self.control.async {
-                        guard self.runID == token && !self.stopping else { return }
-                        if let error = error { self.cleanupCore(); self.finishStart(error); return }
+                        guard self.runID == token && !self.stopping && self.engineStarted else { return }
+                        NSLog("INCY phase=bridge-proxy-check result=%d", result)
+                        guard result == 0 else {
+                            self.cleanupCore()
+                            self.finishStart(ProfileError.invalid("Локальный канал VPN не передаёт данные после настройки сети. Отключите VPN и повторите подключение."))
+                            return
+                        }
                         self.launchBridge(token: token)
                     }
                 }
-            } catch { self.cleanupCore(); self.finishStart(error) }
+            }
         }
     }
 
@@ -97,6 +169,8 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         let descriptor = fds[1]
         io.sync {
             active = true; upload = 0; download = 0; dropped = 0
+            forwardedIPv4 = 0; forwardedIPv6 = 0; returnedPackets = 0; writeFailures = 0
+            largestInput = 0; largestOutput = 0
             packetGeneration = token
             let readSource = DispatchSource.makeReadSource(fileDescriptor: appFD, queue: io)
             readSource.setEventHandler { [weak self] in self?.receivePackets() }
@@ -104,6 +178,10 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
             let localFD = appFD
             readSource.setCancelHandler { Darwin.close(localFD) }
             source = readSource; readSource.resume()
+            let timer = DispatchSource.makeTimerSource(queue: io)
+            timer.schedule(deadline: .now() + 5, repeating: 5)
+            timer.setEventHandler { [weak self] in self?.logPacketCounts() }
+            diagnosticsTimer = timer; timer.resume()
         }
         workerRunning = true
         let context = BridgeContext(provider: self, token: token)
@@ -114,7 +192,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
               ipv4: 198.18.0.1
               ipv6: 'fd00:1::1'
             socks5:
-              address: 127.0.0.1
+              address: '\(XrayConfiguration.bridgeAddress)'
               port: \(XrayConfiguration.socksPort)
               udp: 'udp'
             misc:
@@ -141,6 +219,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
 
     private func bridgeDidStart(token: UUID) {
         guard runID == token && !stopping && workerRunning && startCompletion != nil else { return }
+        NSLog("INCY phase=bridge-ready")
         io.async {
             guard self.active && self.packetGeneration == token else { return }
             self.readPackets(token: token)
@@ -155,15 +234,26 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         if !stopping {
             let error = ProfileError.invalid("Канал VPN завершился (\(result)).")
             if startCompletion != nil { finishStart(error) }
-            else { cancelTunnelWithError(error) }
+            else { recordFailure(error); cancelTunnelWithError(error) }
         }
         let completions = stopCompletions; stopCompletions.removeAll()
         for completion in completions { completion() }
     }
 
     private func finishStart(_ error: Error?) {
+        if let error = error, !stopping { recordFailure(error) }
         let completion = startCompletion; startCompletion = nil
         completion?(error)
+    }
+
+    private func recordFailure(_ error: Error) {
+        NSLog("INCY phase=start-failed")
+        try? ProfileVault.saveTunnelFailure(VPNErrorMessage.describe(error))
+    }
+
+    private func logPacketCounts() {
+        NSLog("INCY packets up=%llu down=%llu dropped=%llu ipv4=%llu ipv6=%llu returned=%llu writeFailures=%llu maxIn=%ld maxOut=%ld",
+              upload, download, dropped, forwardedIPv4, forwardedIPv6, returnedPackets, writeFailures, largestInput, largestOutput)
     }
 
     private func readPackets(token: UUID) {
@@ -173,10 +263,15 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
             self.io.async {
                 guard self.active && self.packetGeneration == token else { return }
                 for (packet, family) in zip(packets, protocols) {
+                    self.largestInput = max(self.largestInput, packet.count)
                     let sent = packet.withUnsafeBytes { bytes in
                         incy_send_packet(self.appFD, bytes.baseAddress, bytes.count, family.int32Value)
                     }
-                    if sent == 0 { self.upload += UInt64(packet.count) } else { self.dropped += 1 }
+                    if sent == 0 {
+                        self.upload += UInt64(packet.count)
+                        if family.int32Value == AF_INET { self.forwardedIPv4 += 1 }
+                        else if family.int32Value == AF_INET6 { self.forwardedIPv6 += 1 }
+                    } else { self.dropped += 1 }
                 }
                 self.readPackets(token: token)
             }
@@ -195,13 +290,15 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
             if count <= 0 { break }
             packets.append(Data(buffer.prefix(Int(count)))); protocols.append(NSNumber(value: family))
             download += UInt64(count)
+            returnedPackets += 1; largestOutput = max(largestOutput, Int(count))
         }
-        if !packets.isEmpty { _ = packetFlow.writePackets(packets, withProtocols: protocols) }
+        if !packets.isEmpty && !packetFlow.writePackets(packets, withProtocols: protocols) { writeFailures += UInt64(packets.count) }
     }
 
     override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
         control.async {
             self.stopping = true
+            NSLog("INCY phase=stop reason=%ld", reason.rawValue)
             self.finishStart(ProfileError.invalid("Подключение отменено."))
             self.stopBridge()
             if self.workerRunning {
@@ -211,7 +308,11 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         }
     }
     private func stopBridge() {
-        io.sync { active = false; source?.cancel(); source = nil; appFD = -1 }
+        io.sync {
+            if active { logPacketCounts() }
+            active = false; diagnosticsTimer?.cancel(); diagnosticsTimer = nil
+            source?.cancel(); source = nil; appFD = -1
+        }
     }
     private func cleanupCore() {
         if engineStarted { IncyXrayStop(); engineStarted = false }

@@ -103,6 +103,8 @@
 				INFOPLIST_FILE = "Config/App-Info.plist";
 				CODE_SIGN_ENTITLEMENTS = "Config/App.entitlements";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -125,6 +127,8 @@
 				INFOPLIST_FILE = "Config/App-Info.plist";
 				CODE_SIGN_ENTITLEMENTS = "Config/App.entitlements";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -253,6 +257,36 @@
 			isa = PBXBuildFile;
 			fileRef = 640B03380220604F731E1759;
 		};
+		FA4E40D518B72D93FF72536A = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "Shared/SubscriptionRequest.swift";
+			sourceTree = "<group>";
+		};
+		EC2CEFC67DDD07A8FC24D332 = {
+			isa = PBXBuildFile;
+			fileRef = FA4E40D518B72D93FF72536A;
+		};
+		9A4C726C40560ED1935119C0 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "Shared/SubscriptionResponse.swift";
+			sourceTree = "<group>";
+		};
+		34976F483130226B275F94E7 = {
+			isa = PBXBuildFile;
+			fileRef = 9A4C726C40560ED1935119C0;
+		};
+		0B51F982BB5ACB039195BFC1 = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.swift";
+			path = "Shared/VPNErrorMessage.swift";
+			sourceTree = "<group>";
+		};
+		B95E7BAAEECFFA6E29F6EC77 = {
+			isa = PBXBuildFile;
+			fileRef = 0B51F982BB5ACB039195BFC1;
+		};
 		A1C145E3AFBDF81B3AD3E695 = {
 			isa = PBXFileReference;
 			lastKnownFileType = "sourcecode.swift";
@@ -278,6 +312,9 @@
 				A7DCC91F6A581B6FA3649188,
 				371CEE2171A78217BA0A4479,
 				7141739AD5E5AF6FBB0F7CA9,
+				EC2CEFC67DDD07A8FC24D332,
+				34976F483130226B275F94E7,
+				B95E7BAAEECFFA6E29F6EC77,
 				576CEF3904CC28F38B0DE58D,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -373,6 +410,10 @@
 					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/lwip/src/ports/include",
 					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/hev-task-system/include",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Native/lib",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lresolv",
@@ -413,6 +454,10 @@
 					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/lwip/src/include",
 					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/lwip/src/ports/include",
 					"$(SRCROOT)/Vendor/hev-socks5-tunnel/third-part/hev-task-system/include",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Native/lib",
 				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -469,6 +514,16 @@
 			isa = PBXBuildFile;
 			fileRef = 236A866EBB847EBF2EC7F076;
 		};
+		8E4A8132602B5BE90B54658E = {
+			isa = PBXFileReference;
+			lastKnownFileType = "sourcecode.c.c";
+			path = "Native/HevDiagnostics.c";
+			sourceTree = "<group>";
+		};
+		6B55477F72B221E9828E421F = {
+			isa = PBXBuildFile;
+			fileRef = 8E4A8132602B5BE90B54658E;
+		};
 		891D6FF18937ECC075E2FFBD = {
 			isa = PBXBuildFile;
 			fileRef = DEB3CAE066802EA2BED64430;
@@ -476,6 +531,18 @@
 		4051F30558406B63BC89DECD = {
 			isa = PBXBuildFile;
 			fileRef = 640B03380220604F731E1759;
+		};
+		387D63BBC5011C196F755ED6 = {
+			isa = PBXBuildFile;
+			fileRef = FA4E40D518B72D93FF72536A;
+		};
+		E0B22E5AD9231976CEEB1FFD = {
+			isa = PBXBuildFile;
+			fileRef = 9A4C726C40560ED1935119C0;
+		};
+		714E54A5BDBAD52817A43A9E = {
+			isa = PBXBuildFile;
+			fileRef = 0B51F982BB5ACB039195BFC1;
 		};
 		3E21A72C60188DCDC0540675 = {
 			isa = PBXBuildFile;
@@ -488,8 +555,12 @@
 				9369147223F7395C11F53892,
 				602C5F9AC2C8887BF664C619,
 				8EDB12E570F700B77A519907,
+				6B55477F72B221E9828E421F,
 				891D6FF18937ECC075E2FFBD,
 				4051F30558406B63BC89DECD,
+				387D63BBC5011C196F755ED6,
+				E0B22E5AD9231976CEEB1FFD,
+				714E54A5BDBAD52817A43A9E,
 				3E21A72C60188DCDC0540675,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -608,10 +679,14 @@
 				3ED3807B35D99A156797D5CF,
 				DEB3CAE066802EA2BED64430,
 				640B03380220604F731E1759,
+				FA4E40D518B72D93FF72536A,
+				9A4C726C40560ED1935119C0,
+				0B51F982BB5ACB039195BFC1,
 				A1C145E3AFBDF81B3AD3E695,
 				DE5548AAD8FAEE292E2F2881,
 				C51E148E6F9E5EA3F7CA972A,
 				236A866EBB847EBF2EC7F076,
+				8E4A8132602B5BE90B54658E,
 				11E833F054751CAB447A606F,
 				477BD3D87107C45FA7857F09,
 				5E59E1F4361C5EFFDAB645AE,

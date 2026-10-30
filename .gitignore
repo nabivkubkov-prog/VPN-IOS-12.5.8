@@ -9,4 +9,6 @@ Native/lib/*.a
 Native/include/libIncyXray.h
 Vendor/**/build/
 Vendor/**/bin/
+__pycache__/
+*.pyc
 

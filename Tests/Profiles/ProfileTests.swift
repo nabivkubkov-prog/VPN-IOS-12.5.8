@@ -30,6 +30,22 @@ final class ProfileTests: XCTestCase {
         XCTAssertEqual(stream["security"] as? String, "reality")
         XCTAssertNil(j["routing"])
     }
+    func testNativeIPv6LoopbackAndHTTPDNSRouting() throws {
+        let p = try ProfileParser.parse("http://192.0.2.1:8080#HTTP")
+        let j = try XCTUnwrap(JSONSerialization.jsonObject(with: XrayConfiguration.make(profile: p)) as? [String: Any])
+        let inbounds = try XCTUnwrap(j["inbounds"] as? [[String: Any]])
+        XCTAssertEqual(inbounds.count, 2)
+        XCTAssertEqual(Set(inbounds.compactMap { $0["listen"] as? String }), ["127.0.0.1", "::1"])
+        for inbound in inbounds {
+            let settings = try XCTUnwrap(inbound["settings"] as? [String: Any])
+            XCTAssertEqual(settings["ip"] as? String, inbound["listen"] as? String)
+            XCTAssertEqual(settings["udp"] as? Bool, true)
+        }
+        let routing = try XCTUnwrap(j["routing"] as? [String: Any])
+        let rules = try XCTUnwrap(routing["rules"] as? [[String: Any]])
+        XCTAssertEqual(Set(try XCTUnwrap(rules.first?["inboundTag"] as? [String])),
+                       Set(inbounds.compactMap { $0["tag"] as? String }))
+    }
     func testInvalidRealityAndInsecureTLSRejected() {
         XCTAssertThrowsError(try ProfileParser.parse(reality.replacingOccurrences(of: key, with: "invalid")))
         XCTAssertThrowsError(try ProfileParser.parse(reality.replacingOccurrences(of: "sid=abcd", with: "sid=abc")))

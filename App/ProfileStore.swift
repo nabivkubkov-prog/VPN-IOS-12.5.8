@@ -39,7 +39,11 @@ final class ProfileStore {
             }
         } catch { for p in inserted { try? ProfileVault.delete(p.id) }; throw error }
         profiles += inserted
-        if defaults.string(forKey: "selectedID") == nil { defaults.set(profiles.first?.id, forKey: "selectedID") }
+        let selection = selected.flatMap { profile -> Profile? in
+            do { try profile.validate(); return profile }
+            catch { return nil }
+        } ?? profiles.first { (try? $0.validate()) != nil }
+        defaults.set(selection?.id, forKey: "selectedID")
         persist()
     }
     func select(_ p: Profile) { defaults.set(p.id, forKey: "selectedID"); changed() }

@@ -22,7 +22,9 @@ func TestProtocolFixtures(t *testing.T) {
 	}
 	if directory := os.Getenv("INCY_CONFIG_INPUT"); directory != "" {
 		swiftFiles, err := filepath.Glob(filepath.Join(directory, "*.json"))
-		if err != nil || len(swiftFiles) != 7 { t.Fatal("Missing Swift-generated fixtures", err) }
+		if err != nil || len(swiftFiles) != 17 {
+			t.Fatal("Missing Swift-generated fixtures", err)
+		}
 		files = append(files, swiftFiles...)
 	}
 	for _, file := range files {
@@ -63,8 +65,11 @@ func freePort(t *testing.T) int {
 
 func localConfig(port int, outbound map[string]any) []byte {
 	j := map[string]any{
-		"log":       map[string]any{"loglevel": "none"},
-		"inbounds":  []any{map[string]any{"listen": "127.0.0.1", "port": port, "protocol": "socks", "settings": map[string]any{"auth": "noauth", "udp": true, "ip": "127.0.0.1"}}},
+		"log": map[string]any{"loglevel": "none"},
+		"inbounds": []any{
+			map[string]any{"tag": "tun-socks", "listen": "127.0.0.1", "port": port, "protocol": "socks", "settings": map[string]any{"auth": "noauth", "udp": true, "ip": "127.0.0.1"}},
+			map[string]any{"tag": "tun-socks-v6", "listen": "::1", "port": port, "protocol": "socks", "settings": map[string]any{"auth": "noauth", "udp": true, "ip": "::1"}},
+		},
 		"outbounds": []any{outbound},
 	}
 	bytes, _ := json.Marshal(j)
@@ -140,6 +145,12 @@ func portString(port int) string {
 }
 
 func TestSOCKSUDPRelay(t *testing.T) {
+	for _, loopback := range []string{"127.0.0.1", "::1"} {
+		t.Run(loopback, func(t *testing.T) { testSOCKSUDPRelay(t, loopback) })
+	}
+}
+
+func testSOCKSUDPRelay(t *testing.T, loopback string) {
 	echo, err := net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1)})
 	if err != nil {
 		t.Fatal(err)
@@ -158,7 +169,7 @@ func TestSOCKSUDPRelay(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer e.Stop()
-	control, err := net.DialTimeout("tcp", net.JoinHostPort("127.0.0.1", portString(port)), 3*time.Second)
+	control, err := net.DialTimeout("tcp", net.JoinHostPort(loopback, portString(port)), 3*time.Second)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -170,12 +181,28 @@ func TestSOCKSUDPRelay(t *testing.T) {
 		t.Fatal("SOCKS handshake", err)
 	}
 	_, _ = control.Write([]byte{5, 3, 0, 1, 0, 0, 0, 0, 0, 0})
-	reply := make([]byte, 10)
-	if _, err = io.ReadFull(control, reply); err != nil || reply[1] != 0 || reply[3] != 1 {
+	header := make([]byte, 4)
+	if _, err = io.ReadFull(control, header); err != nil || header[1] != 0 {
+		t.Fatal("UDP associate", err, header)
+	}
+	addressLength := 4
+	if loopback == "::1" {
+		addressLength = 16
+		if header[3] != 4 {
+			t.Fatal("IPv6 loopback returned an IPv4 UDP relay", header)
+		}
+	} else if header[3] != 1 {
+		t.Fatal("IPv4 loopback returned an IPv6 UDP relay", header)
+	}
+	reply := make([]byte, addressLength+2)
+	if _, err = io.ReadFull(control, reply); err != nil {
 		t.Fatal("UDP associate", err, reply)
 	}
-	relay := &net.UDPAddr{IP: net.IP(reply[4:8]), Port: int(binary.BigEndian.Uint16(reply[8:10]))}
-	udp, err := net.DialUDP("udp4", nil, relay)
+	relay := &net.UDPAddr{IP: net.IP(reply[:addressLength]), Port: int(binary.BigEndian.Uint16(reply[addressLength:]))}
+	if relay.IP.String() != loopback {
+		t.Fatal("SOCKS advertised the wrong UDP loopback", relay)
+	}
+	udp, err := net.DialUDP("udp", nil, relay)
 	if err != nil {
 		t.Fatal(err)
 	}

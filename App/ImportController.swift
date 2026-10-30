@@ -51,15 +51,28 @@ final class ImportController: UIViewController, UITextViewDelegate {
     }
     private func store(_ text: String) {
         do {
-            let profiles = try ProfileParser.parseBatch(text)
+            let parsed = try ProfileParser.parseSubscription(text)
             let before = ProfileStore.shared.profiles.count
-            try ProfileStore.shared.add(profiles)
+            try ProfileStore.shared.add(parsed.profiles)
             let added = ProfileStore.shared.profiles.count - before
             status.text = added == 0 ? "Эти профили уже добавлены." : "Добавлено профилей: \(added)."
-            if added > 0 { input.text = ""; dismiss(animated: true) }
+            if !parsed.omissions.isEmpty {
+                let details = parsed.omissions.prefix(3).joined(separator: "\n")
+                let message = "Совместимых серверов: \(parsed.profiles.count). Добавлено: \(added). Пропущено: \(parsed.omissions.count).\n\n\(details)"
+                status.text = "Добавлено: \(added). Пропущено: \(parsed.omissions.count)."
+                input.text = ""
+                let alert = UIAlertController(title: "Импорт завершён", message: message, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "К серверам", style: .default) { [weak self] _ in self?.close() })
+                present(alert, animated: true)
+            } else if added > 0 { input.text = ""; close() }
         } catch { status.text = error.localizedDescription }
     }
-    @objc private func close() { loader?.cancel(); dismiss(animated: true) }
+    @objc private func close() {
+        loader?.cancel()
+        if let navigation = navigationController, navigation.viewControllers.count > 1 {
+            navigation.popViewController(animated: true)
+        } else { dismiss(animated: true) }
+    }
     deinit { loader?.cancel() }
 }
 
@@ -71,7 +84,9 @@ final class SubscriptionLoader: NSObject, URLSessionDataDelegate {
         self.completion = completion
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 20; config.timeoutIntervalForResource = 30
-        config.httpAdditionalHeaders = ["User-Agent": "INCY-iOS12/1.0", "Accept": "text/plain"]
+        config.httpAdditionalHeaders = SubscriptionRequest.headers(deviceID: SubscriptionRequest.deviceID(),
+                                                                  osVersion: UIDevice.current.systemVersion,
+                                                                  model: UIDevice.current.model)
         session = URLSession(configuration: config, delegate: self, delegateQueue: .main)
         session?.dataTask(with: url).resume()
     }
@@ -81,18 +96,20 @@ final class SubscriptionLoader: NSObject, URLSessionDataDelegate {
         completion = nil; session?.invalidateAndCancel(); session = nil; bytes = Data(); callback(result)
     }
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
-        guard let http = response as? HTTPURLResponse, http.statusCode == 200, response.expectedContentLength <= 1_048_576 else {
-            completionHandler(.cancel); finish(.failure(ProfileError.invalid("Подписка недоступна или превышает 1 МБ."))); return
+        do {
+            try SubscriptionResponse.validate(response)
+            completionHandler(.allow)
+        } catch {
+            completionHandler(.cancel); finish(.failure(error))
         }
-        completionHandler(.allow)
     }
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
         guard request.url?.scheme == "https" else { completionHandler(nil); finish(.failure(ProfileError.invalid("Подписка должна использовать HTTPS."))); return }
         completionHandler(request)
     }
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        guard bytes.count + data.count <= 1_048_576 else { finish(.failure(ProfileError.invalid("Подписка превышает 1 МБ."))); return }
-        bytes.append(data)
+        do { try SubscriptionResponse.append(data, to: &bytes) }
+        catch { finish(.failure(error)) }
     }
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error = error { finish(.failure(error)); return }
