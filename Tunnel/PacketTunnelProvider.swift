@@ -137,7 +137,21 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
             self.control.async {
                 guard self.runID == token && !self.stopping && self.engineStarted else { return }
                 if let error = error { self.cleanupCore(); self.finishStart(error); return }
-                self.launchBridge(token: token)
+                // Verify the same IPv6 SOCKS endpoint after iOS installs the
+                // routes; the pre-route core check alone missed this failure.
+                self.bootstrap.async {
+                    let result = IncyXrayProbe(Int32(XrayConfiguration.socksPort))
+                    self.control.async {
+                        guard self.runID == token && !self.stopping && self.engineStarted else { return }
+                        NSLog("INCY phase=bridge-proxy-check result=%d", result)
+                        guard result == 0 else {
+                            self.cleanupCore()
+                            self.finishStart(ProfileError.invalid("Локальный канал VPN не передаёт данные после настройки сети. Отключите VPN и повторите подключение."))
+                            return
+                        }
+                        self.launchBridge(token: token)
+                    }
+                }
             }
         }
     }
@@ -178,7 +192,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
               ipv4: 198.18.0.1
               ipv6: 'fd00:1::1'
             socks5:
-              address: 127.0.0.1
+              address: '\(XrayConfiguration.bridgeAddress)'
               port: \(XrayConfiguration.socksPort)
               udp: 'udp'
             misc:

@@ -70,6 +70,28 @@ func TestProbeUsesSOCKSAndAcceptsEitherResponsiveTarget(t *testing.T) {
 	}
 }
 
+func TestProbeNativeIPv6Loopback(t *testing.T) {
+	_, socks := startProbeCore(t)
+	_, port, err := net.SplitHostPort(socks)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var requests atomic.Int32
+	origin := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests.Add(1)
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer origin.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if result := probeSOCKS(ctx, net.JoinHostPort("::1", port), []string{origin.URL}); result != ProbeSuccess {
+		t.Fatal("native IPv6 loopback failed to reach the IPv4 origin", result)
+	}
+	if requests.Load() != 1 {
+		t.Fatal("origin was not reached through IPv6 SOCKS")
+	}
+}
+
 func TestProbeDoesNotFollowRedirects(t *testing.T) {
 	_, socks := startProbeCore(t)
 	var followed atomic.Int32

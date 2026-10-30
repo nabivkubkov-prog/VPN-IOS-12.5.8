@@ -67,7 +67,8 @@ func (e *Engine) Probe(port int) ProbeResult {
 	}
 	ctx, cancel := context.WithTimeout(runContext, 10*time.Second)
 	defer cancel()
-	return probeSOCKS(ctx, net.JoinHostPort("127.0.0.1", strconv.Itoa(port)), connectivityTargets)
+	// Match HEV's native IPv6 loopback connection on iOS 12.
+	return probeSOCKS(ctx, net.JoinHostPort("::1", strconv.Itoa(port)), connectivityTargets)
 }
 
 func probeSOCKS(ctx context.Context, address string, targets []string) ProbeResult {

@@ -40,7 +40,9 @@ class SocksHandler(socketserver.BaseRequestHandler):
             else:
                 raise AssertionError("Expected numeric SOCKS target")
             port = self.server.udp.getsockname()[1] if command == 3 else 0
-            self.request.sendall(b"\x05\x00\x00\x01\x7f\x00\x00\x01" + struct.pack("!H", port))
+            address = ipaddress.ip_address(self.server.server_address[0])
+            kind = 1 if address.version == 4 else 4
+            self.request.sendall(bytes([5, 0, 0, kind]) + address.packed + struct.pack("!H", port))
             if command == 3:
                 while self.request.recv(1):
                     pass
@@ -59,10 +61,11 @@ class SocksServer(socketserver.ThreadingTCPServer):
     daemon_threads = True
     allow_reuse_address = True
 
-    def __init__(self):
-        super().__init__(("127.0.0.1", 0), SocksHandler)
-        self.udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.udp.bind(("127.0.0.1", 0))
+    def __init__(self, address):
+        self.address_family = socket.AF_INET6 if ":" in address else socket.AF_INET
+        super().__init__((address, 0), SocksHandler)
+        self.udp = socket.socket(self.address_family, socket.SOCK_DGRAM)
+        self.udp.bind((address, 0))
         self.udp.settimeout(0.2)
         self.finished = threading.Event()
         self.echo = threading.Thread(target=self.echo_udp, daemon=True)
@@ -125,7 +128,7 @@ def tcp_packet(version, sequence, acknowledgement, flags, data=b"", options=b"")
 class Tunnel:
     READY = C.CFUNCTYPE(None, C.c_void_p)
 
-    def __init__(self, library, port):
+    def __init__(self, library, address, port):
         self.library = library
         self.fds = (C.c_int * 2)(-1, -1)
         assert library.incy_socket_pair(self.fds) == 0
@@ -137,7 +140,7 @@ class Tunnel:
   ipv4: 198.18.0.1
   ipv6: 'fd00:1::1'
 socks5:
-  address: 127.0.0.1
+  address: '{address}'
   port: {port}
   udp: 'udp'
 misc:
@@ -238,23 +241,24 @@ def main():
     library.incy_send_packet.argtypes = [C.c_int, C.c_void_p, C.c_size_t, C.c_int]
     library.incy_receive_packet.argtypes = [C.c_int, C.c_void_p, C.c_size_t, C.POINTER(C.c_int)]
     library.incy_hev_failure_stage.restype = C.c_char_p
-    server = SocksServer()
-    try:
-        for cycle in range(2):
-            tunnel = Tunnel(library, server.server_address[1])
-            try:
-                for version in [4, 6]:
-                    tunnel.udp(version)
-                    tunnel.tcp(version)
-            except Exception as error:
-                stage = library.incy_hev_failure_stage().decode()
-                code = library.incy_hev_failure_errno()
-                raise AssertionError(f"{error}; native stage={stage} errno={code}") from error
-            finally:
-                tunnel.close()
-            print(f"Real Apple HEV IPv4/IPv6 TCP, UDP, MTU and restart: cycle {cycle + 1} passed", flush=True)
-    finally:
-        server.close()
+    for address in ["::1", "127.0.0.1"]:
+        server = SocksServer(address)
+        try:
+            for cycle in range(2):
+                tunnel = Tunnel(library, address, server.server_address[1])
+                try:
+                    for version in [4, 6]:
+                        tunnel.udp(version)
+                        tunnel.tcp(version)
+                except Exception as error:
+                    stage = library.incy_hev_failure_stage().decode()
+                    code = library.incy_hev_failure_errno()
+                    raise AssertionError(f"{error}; native stage={stage} errno={code}") from error
+                finally:
+                    tunnel.close()
+                print(f"Real Apple HEV via {address}, IPv4/IPv6 TCP, UDP, MTU and restart: cycle {cycle + 1} passed", flush=True)
+        finally:
+            server.close()
 
 
 if __name__ == "__main__":

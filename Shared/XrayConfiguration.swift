@@ -7,6 +7,9 @@ import Glibc
 
 public enum XrayConfiguration {
     public static let socksPort = 10808
+    // HEV uses AF_INET6 sockets. Native IPv6 loopback avoids iOS 12
+    // NetworkExtension rejecting IPv4-mapped loopback with EADDRNOTAVAIL.
+    public static let bridgeAddress = "::1"
     public static func make(profile p: Profile, dns: String = "1.1.1.1", upstreamIP: String? = nil) throws -> Data {
         try p.validate()
         guard ["1.1.1.1", "8.8.8.8", "9.9.9.9"].contains(dns) else { throw ProfileError.invalid("Выберите DNS из списка.") }
@@ -67,7 +70,10 @@ public enum XrayConfiguration {
         // No direct fallback is added when the proxy fails.
         var j: [String: Any] = [
             "log": ["loglevel": "none"],
-            "inbounds": [["tag": "tun-socks", "listen": "127.0.0.1", "port": socksPort, "protocol": "socks", "settings": ["auth": "noauth", "udp": true, "ip": "127.0.0.1"], "sniffing": ["enabled": false]]],
+            "inbounds": [
+                ["tag": "tun-socks", "listen": "127.0.0.1", "port": socksPort, "protocol": "socks", "settings": ["auth": "noauth", "udp": true, "ip": "127.0.0.1"], "sniffing": ["enabled": false]],
+                ["tag": "tun-socks-v6", "listen": bridgeAddress, "port": socksPort, "protocol": "socks", "settings": ["auth": "noauth", "udp": true, "ip": bridgeAddress], "sniffing": ["enabled": false]]
+            ],
             "outbounds": [["tag": "proxy", "protocol": protocolName, "settings": settings, "streamSettings": stream, "mux": ["enabled": false]]],
             "policy": ["levels": ["0": ["handshake": 8, "connIdle": 120, "uplinkOnly": 2, "downlinkOnly": 2, "bufferSize": 4]]]
         ]
@@ -79,7 +85,7 @@ public enum XrayConfiguration {
             var outbounds = j["outbounds"] as! [[String: Any]]
             outbounds.append(["tag": "dns-out", "protocol": "dns", "settings": ["network": "tcp", "address": dns, "port": 53, "nonIPQuery": "skip"], "proxySettings": ["tag": "proxy"]])
             j["outbounds"] = outbounds
-            j["routing"] = ["domainStrategy": "AsIs", "rules": [["type": "field", "inboundTag": ["tun-socks"], "port": "53", "outboundTag": "dns-out"]]]
+            j["routing"] = ["domainStrategy": "AsIs", "rules": [["type": "field", "inboundTag": ["tun-socks", "tun-socks-v6"], "port": "53", "outboundTag": "dns-out"]]]
         }
         return try JSONSerialization.data(withJSONObject: j, options: [.sortedKeys])
     }
